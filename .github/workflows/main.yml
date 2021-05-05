@@ -1,0 +1,31 @@
+name: CI
+
+on:
+  push:
+    branches: [ release-production ]
+  pull_request:
+    branches: [ release-production ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: pandoc/latex
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install mustache (to update the date)
+        run:  apk add ruby && gem install mustache
+      - name: creates output
+        run:  sh ./build.sh
+      - name: Pushes to another repository
+        id: push_directory
+        uses: alexandreleick/prod@main
+        env:
+          API_TOKEN_GITHUB: "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"
+        with:
+          destination-github-username: 'alexandreleick'
+          destination-repository-name: 'prod'
+          user-email: alexandre.leick@epitech.eu
+          commit-message: See ORIGIN_COMMIT from $GITHUB_REF
+          target-branch: main
+      - name: Test get variable exported by push-to-another-repository
+        run: echo $DESTINATION_CLONED_DIRECTORY
